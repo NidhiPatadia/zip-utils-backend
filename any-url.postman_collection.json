@@ -1,0 +1,97 @@
+{
+	"info": {
+		"_postman_id": "bf905b71-9751-4c89-b3ef-cec3bccb7911",
+		"name": "any-url",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28527087"
+	},
+	"item": [
+		{
+			"name": "healthCheck",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query HealthCheck {\r\n  healthCheck\r\n}\r\n",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4000/local/graphql",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"local",
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "generateUrl",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation GenerateUrl($url: String!) {\r\n  generateUrl(url: $url) \r\n}\r\n",
+						"variables": "{\r\n    \"url\": \"https://www.google.com\"\r\n}"
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4000/local/graphql",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"local",
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getUrl",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query GetUrl($url: String!) {\r\n  getUrl(url: $url) \r\n}\r\n",
+						"variables": "{\r\n    \"url\": \"com/jVJGtuB\"\r\n}"
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4000/local/graphql",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"local",
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
