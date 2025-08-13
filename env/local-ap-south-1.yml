@@ -1,0 +1,2 @@
+IS_PRODUCTION: false
+FRONTEND_DOMAIN: https://localhost:4200

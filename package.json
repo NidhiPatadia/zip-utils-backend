@@ -1,0 +1,33 @@
+{
+  "name": "zip-url",
+  "version": "1.0.0",
+  "description": "<!-- title: 'AWS NodeJS Example' description: 'This template demonstrates how to deploy a simple NodeJS function running on AWS Lambda using the Serverless Framework.' layout: Doc framework: v4 platform: AWS language: nodeJS priority: 1 authorLink: 'https://github.com/serverless' authorName: 'Serverless, Inc.' authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4' -->",
+  "main": "src/handler.js",
+  "scripts": {
+    "start": "sls offline --stage=local",
+    "test": "jest --runInBand --coverage",
+    "deploy": "sls deploy --stage=dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.1.0",
+    "aws-sdk-client-mock": "^4.1.0",
+    "jest": "^30.0.5",
+    "prettier": "3.6.2",
+    "serverless-offline": "^14.4.0",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@apollo/server": "^4.12.2",
+    "@as-integrations/aws-lambda": "^3.1.0",
+    "@aws-sdk/client-dynamodb": "^3.859.0",
+    "@aws-sdk/lib-dynamodb": "^3.859.0",
+    "graphql": "^16.11.0",
+    "short-unique-id": "^5.3.2"
+  }
+}

@@ -1,0 +1,67 @@
+service: zip-utils-backend
+
+plugins:
+  - serverless-offline
+
+custom:
+  env:
+    local: 'local'
+    dev: 'dev'
+    prod: 'prod'
+
+  config: ${file(env/${sls:stage}-${self:provider.region}.yml)}
+
+  serverless-offline:
+    httpPort: 4000
+    noPrependStageInUrl: true
+    prefix: ${sls:stage}
+    noAuth: true
+
+  urlsTableName: ziputils-zipurl-${sls:stage}-urls-table
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  httpApi:
+    cors: true
+  stage: ${opt:stage, 'local'}
+  region: ap-south-1
+  endpointType: REGIONAL
+  timeout: 30
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+          Resource:
+            - arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.urlsTableName}
+  environment:
+    NODE_ENV: ${sls:stage}
+    IS_PRODUCTION: ${self:custom.config.IS_PRODUCTION}
+    FRONTEND_DOMAIN: ${self:custom.config.FRONTEND_DOMAIN}
+
+functions:
+  graphql:
+    handler: src/handler.graphqlHandler
+    events:
+      - httpApi:
+          path: /graphql
+          method: POST
+    environment:
+      URLS_TABLE_NAME: ${self:custom.urlsTableName}
+
+resources:
+  Resources:
+    urlsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.urlsTableName}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
