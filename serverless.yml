@@ -48,8 +48,14 @@ functions:
     handler: src/handler.graphqlHandler
     events:
       - http:
-          path: graphql
-          method: post
+          path: /graphql
+          method: POST
+          cors:
+            origin: 'https://ziputils.com'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
     environment:
       URLS_TABLE_NAME: ${self:custom.urlsTableName}
 
