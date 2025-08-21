@@ -14,17 +14,7 @@ const server = new ApolloServer({
   introspection: NODE_ENV !== ENVIRONMENTS.PROD,
 });
 
-const handler = handlers.createAPIGatewayProxyEventRequestHandler();
-
-export const graphqlHandler = async (event, context) => {
-  const response = await startServerAndCreateLambdaHandler(server, handler)(event, context);
-
-  response.headers = {
-    ...response.headers,
-    'Access-Control-Allow-Origin': 'https://ziputils.com',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'OPTIONS, POST',
-  };
-
-  return response;
-};
+export const graphqlHandler = startServerAndCreateLambdaHandler(
+  server,
+  handlers.createAPIGatewayProxyEventRequestHandler(),
+);
