@@ -22,8 +22,9 @@ custom:
 provider:
   name: aws
   runtime: nodejs20.x
-  httpApi:
-    cors: true
+  apiGateway:
+    minimumCompressionSize: 1024
+    metrics: false
   stage: ${opt:stage, 'local'}
   region: ap-south-1
   endpointType: REGIONAL
@@ -46,9 +47,15 @@ functions:
   graphql:
     handler: src/handler.graphqlHandler
     events:
-      - httpApi:
+      - http:
           path: /graphql
           method: POST
+          cors:
+            origin: 'https://ziputils.com'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
     environment:
       URLS_TABLE_NAME: ${self:custom.urlsTableName}
 
