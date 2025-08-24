@@ -116,7 +116,7 @@ resources:
               Block: {}
             Statement:
               RateBasedStatement:
-                Limit: 10 # 10 requests in 5 minutes
+                Limit: 100 # 10 requests in 5 minutes
                 AggregateKeyType: IP
                 ScopeDownStatement:
                   ByteMatchStatement:
