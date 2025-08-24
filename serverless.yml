@@ -51,7 +51,7 @@ functions:
           path: /graphql
           method: POST
           cors:
-            origin: 'https://ziputils.com'
+            origin: ${self:custom.config.FRONTEND_DOMAIN}
             headers:
               - Content-Type
               - Authorization
@@ -81,7 +81,7 @@ resources:
         Name: ziputils-web-acl
         Scope: REGIONAL
         DefaultAction:
-          Allow: {}  # Allow all by default, rules will block unwanted traffic
+          Allow: {} # Allow all by default, rules will block unwanted traffic
         VisibilityConfig:
           CloudWatchMetricsEnabled: true
           MetricName: ziputilsWebACL
@@ -96,13 +96,13 @@ resources:
               NotStatement:
                 Statement:
                   ByteMatchStatement:
-                    SearchString: "https://ziputils.com"
+                    SearchString: ${self:custom.config.FRONTEND_DOMAIN}
                     FieldToMatch:
                       SingleHeader:
-                        Name: "origin"
+                        Name: 'origin'
                     TextTransformations:
                       - Priority: 0
-                        Type: "LOWERCASE"
+                        Type: 'LOWERCASE'
                     PositionalConstraint: EXACTLY
             VisibilityConfig:
               CloudWatchMetricsEnabled: true
@@ -116,17 +116,17 @@ resources:
               Block: {}
             Statement:
               RateBasedStatement:
-                Limit: 10  # 10 requests in 5 minutes
+                Limit: 10 # 10 requests in 5 minutes
                 AggregateKeyType: IP
                 ScopeDownStatement:
                   ByteMatchStatement:
-                    SearchString: "https://ziputils.com"
+                    SearchString: ${self:custom.config.FRONTEND_DOMAIN}
                     FieldToMatch:
                       SingleHeader:
-                        Name: "origin"
+                        Name: 'origin'
                     TextTransformations:
                       - Priority: 0
-                        Type: "LOWERCASE"
+                        Type: 'LOWERCASE'
                     PositionalConstraint: EXACTLY
             VisibilityConfig:
               CloudWatchMetricsEnabled: true
