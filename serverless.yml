@@ -61,6 +61,7 @@ functions:
 
 resources:
   Resources:
+    # ✅ DynamoDB Table
     urlsTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -72,3 +73,69 @@ resources:
           - AttributeName: id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
+
+    # ✅ WAF WebACL with Origin Restriction + Rate Limit
+    ZipUtilsWebACL:
+      Type: AWS::WAFv2::WebACL
+      Properties:
+        Name: ziputils-web-acl
+        Scope: REGIONAL
+        DefaultAction:
+          Allow: {}  # Allow all by default, rules will block unwanted traffic
+        VisibilityConfig:
+          CloudWatchMetricsEnabled: true
+          MetricName: ziputilsWebACL
+          SampledRequestsEnabled: true
+        Rules:
+          # ✅ Block if Origin is not ziputils.com
+          - Name: BlockInvalidOrigin
+            Priority: 1
+            Action:
+              Block: {}
+            Statement:
+              NotStatement:
+                Statement:
+                  ByteMatchStatement:
+                    SearchString: "https://ziputils.com"
+                    FieldToMatch:
+                      SingleHeader:
+                        Name: "origin"
+                    TextTransformations:
+                      - Priority: 0
+                        Type: "LOWERCASE"
+                    PositionalConstraint: EXACTLY
+            VisibilityConfig:
+              CloudWatchMetricsEnabled: true
+              MetricName: blockInvalidOrigin
+              SampledRequestsEnabled: true
+
+          # ✅ Rate Limit for ziputils.com origin
+          - Name: RateLimitZiputils
+            Priority: 2
+            Action:
+              Block: {}
+            Statement:
+              RateBasedStatement:
+                Limit: 10  # 10 requests in 5 minutes
+                AggregateKeyType: IP
+                ScopeDownStatement:
+                  ByteMatchStatement:
+                    SearchString: "https://ziputils.com"
+                    FieldToMatch:
+                      SingleHeader:
+                        Name: "origin"
+                    TextTransformations:
+                      - Priority: 0
+                        Type: "LOWERCASE"
+                    PositionalConstraint: EXACTLY
+            VisibilityConfig:
+              CloudWatchMetricsEnabled: true
+              MetricName: rateLimitZiputils
+              SampledRequestsEnabled: true
+
+    # ✅ Associate WAF with API Gateway Stage
+    WAFWebACLAssociation:
+      Type: AWS::WAFv2::WebACLAssociation
+      Properties:
+        ResourceArn: !Sub arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
+        WebACLArn: !GetAtt ZipUtilsWebACL.Arn
