@@ -3,6 +3,9 @@ import { config } from '../configs/common.config';
 import { DynamoDbOperations } from '../dynamo/dynamo.class';
 
 export class URLService {
+  private urlsTableName = process.env.URLS_TABLE_NAME as string;
+  private zipTextTableName = process.env.ZIPTEXT_TABLE_NAME as string;
+
   async generateUrl(url: string) {
     console.log('Requested URL:', url);
 
@@ -11,7 +14,7 @@ export class URLService {
     const id = uuid.randomUUID(config.minUrlLength);
 
     // creating a record in dynamodb
-    await new DynamoDbOperations().putItemInUrlsTable(id, url);
+    await new DynamoDbOperations(this.urlsTableName).putItemInUrlsTable(id, url);
 
     // returning the shortned url to the end user
     const shortUrl = `${process.env.FRONTEND_DOMAIN}/${id}`;
@@ -27,7 +30,7 @@ export class URLService {
     const id = urlParts[urlParts.length - 1];
 
     // get url based on 'id'
-    const urlRecord = await new DynamoDbOperations().getItemFromUrlsTable(id);
+    const urlRecord = await new DynamoDbOperations(this.urlsTableName).getItemFromUrlsTable(id);
 
     // throw error for UI, if url not found
     if (!urlRecord?.url) {
@@ -35,5 +38,33 @@ export class URLService {
     }
 
     return urlRecord.url;
+  }
+
+  // 📝 For storing long custom text
+  async generateZipTextUrl(text: string): Promise<string> {
+    console.log('Requested Text:', text);
+
+    const uuid = new ShortUniqueId();
+    const id = uuid.randomUUID(config.minUrlLength);
+
+    const createdAt = new Date().toISOString();
+
+    await new DynamoDbOperations(this.zipTextTableName).putItemInZipTextTable(id, createdAt, text);
+
+    const shortUrl = `${process.env.FRONTEND_DOMAIN}/t/${id}`;
+    console.log('Short Text URL:', shortUrl);
+    return shortUrl;
+  }
+
+  async getZipTextById(id: string): Promise<string> {
+    console.log('Fetching text with ID:', id);
+
+    const record = await new DynamoDbOperations(this.zipTextTableName).getItemFromZipTextTable(id);
+
+    if (!record?.text) {
+      throw new Error('Text not found!');
+    }
+
+    return record.text;
   }
 }

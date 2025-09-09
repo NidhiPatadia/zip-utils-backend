@@ -11,15 +11,20 @@ export interface IUrlRecord {
   url: string;
 }
 
+export interface IZipTextRecord {
+  id: string;
+  createdAt: string;
+  text: string;
+}
+
 export class DynamoDbOperations {
   private readonly client: DynamoDBClient;
   private readonly docClient: DynamoDBDocumentClient;
   private readonly tableName: string;
 
-  constructor() {
+  constructor(tableName: string) {
     const NODE_ENV = process.env.NODE_ENV;
 
-    // creating a dynamo client based on env
     this.client = new DynamoDBClient(
       !NODE_ENV ||
       NODE_ENV === ENVIRONMENTS.LOCAL ||
@@ -32,7 +37,7 @@ export class DynamoDbOperations {
           },
     );
     this.docClient = DynamoDBDocumentClient.from(this.client);
-    this.tableName = process.env.URLS_TABLE_NAME as string;
+    this.tableName = tableName;
   }
 
   async putItemInUrlsTable(id: string, url: string) {
@@ -58,9 +63,7 @@ export class DynamoDbOperations {
     try {
       const getItemParams = new GetCommand({
         TableName: this.tableName,
-        Key: {
-          id,
-        },
+        Key: { id },
       });
       console.log(`${mn}:`, getItemParams.input);
 
@@ -71,5 +74,24 @@ export class DynamoDbOperations {
       console.error(`ERROR ${mn}`, e);
       throw new Error(e);
     }
+  }
+
+  async putItemInZipTextTable(id: string, createdAt: string, text: string) {
+    const mn = this.putItemInZipTextTable.name;
+    try {
+      const putItemParams = new PutCommand({
+        TableName: this.tableName,
+        Item: { id, createdAt, text },
+      });
+      console.log(`${mn}:`, putItemParams.input);
+      await this.docClient.send(putItemParams);
+    } catch (e: any) {
+      console.error(`ERROR ${mn}`, e);
+      throw new Error(e);
+    }
+  }
+
+  async getItemFromZipTextTable(id: string) {
+    return this.getItemFromUrlsTable(id);
   }
 }
