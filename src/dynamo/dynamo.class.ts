@@ -9,12 +9,13 @@ import { config, ENVIRONMENTS } from '../configs/common.config';
 export interface IUrlRecord {
   id: string;
   url: string;
+  expiryTime?: number;
 }
 
 export interface IZipTextRecord {
   id: string;
-  createdAt: string;
   text: string;
+  expiryTime?: number;
 }
 
 export class DynamoDbOperations {
@@ -40,16 +41,21 @@ export class DynamoDbOperations {
     this.tableName = tableName;
   }
 
-  async putItemInUrlsTable(id: string, url: string) {
+  async putItemInUrlsTable(id: string, url: string, expiryTime?: number) {
     const mn = this.putItemInUrlsTable.name;
     try {
+      const item: any = {
+        id,
+        url,
+      };
+      if (expiryTime !== undefined) {
+        item.expiryTime = expiryTime;
+      }
       const putItemParams = new PutCommand({
         TableName: this.tableName,
-        Item: {
-          id,
-          url,
-        },
+        Item: item,
       });
+
       console.log(`${mn}:`, putItemParams.input);
       await this.docClient.send(putItemParams);
     } catch (e: any) {
@@ -58,7 +64,7 @@ export class DynamoDbOperations {
     }
   }
 
-  async getItemFromUrlsTable(id: string): Promise<IUrlRecord> {
+  async getItemFromUrlsTable(id: string): Promise<IUrlRecord | null> {
     const mn = this.getItemFromUrlsTable.name;
     try {
       const getItemParams = new GetCommand({
@@ -66,22 +72,34 @@ export class DynamoDbOperations {
         Key: { id },
       });
       console.log(`${mn}:`, getItemParams.input);
-
       const response = await this.docClient.send(getItemParams);
-      console.log(`${mn}:`, response.Item);
-      return response.Item as IUrlRecord;
+      const record = response.Item as IUrlRecord | undefined;
+
+      if (!record) {
+        console.log(`${mn}: No record found`);
+        return null;
+      }
+      const now = Math.floor(Date.now() / 1000);
+      const isExpired = record.expiryTime !== undefined && record.expiryTime <= now;
+      if (isExpired) {
+        console.log(`${mn}: Record found but expired`);
+        return null;
+      }
+
+      console.log(`${mn}:`, record);
+      return record;
     } catch (e: any) {
       console.error(`ERROR ${mn}`, e);
       throw new Error(e);
     }
   }
 
-  async putItemInZipTextTable(id: string, createdAt: string, text: string) {
+  async putItemInZipTextTable(id: string, text: string, expiryTime: number) {
     const mn = this.putItemInZipTextTable.name;
     try {
       const putItemParams = new PutCommand({
         TableName: this.tableName,
-        Item: { id, createdAt, text },
+        Item: { id, text, expiryTime},
       });
       console.log(`${mn}:`, putItemParams.input);
       await this.docClient.send(putItemParams);
@@ -91,7 +109,37 @@ export class DynamoDbOperations {
     }
   }
 
-  async getItemFromZipTextTable(id: string) {
-    return this.getItemFromUrlsTable(id);
+  async getItemFromZipTextTable(id: string): Promise<IZipTextRecord | null> {
+    const mn = this.getItemFromZipTextTable.name;
+    try {
+      const getItemParams = new GetCommand({
+        TableName: this.tableName,
+        Key: { id },
+      });
+
+      console.log(`${mn}:`, getItemParams.input);
+      const response = await this.docClient.send(getItemParams);
+
+      const record = response.Item as IZipTextRecord | undefined;
+
+      if (!record) {
+        console.log(`${mn}: No record found`);
+        return null;
+      }
+
+      const now = Math.floor(Date.now() / 1000);
+      const isExpired = record.expiryTime !== undefined && record.expiryTime <= now;
+
+      if (isExpired) {
+        console.log(`${mn}: Record found but expired`);
+        return null;
+      }
+
+      console.log(`${mn}:`, record);
+      return record;
+    } catch (e: any) {
+      console.error(`ERROR ${mn}`, e);
+      throw new Error(e);
+    }
   }
 }

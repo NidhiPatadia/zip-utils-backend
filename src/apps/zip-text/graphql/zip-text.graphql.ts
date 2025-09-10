@@ -4,6 +4,6 @@ type Query {
 }
 
 type Mutation {
-  generateZipTextUrl(text: String!): String!
+  generateZipTextUrl(text: String!, expiryInMinutes: Int): String!
 }
 `;
