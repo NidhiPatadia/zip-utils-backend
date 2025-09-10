@@ -5,6 +5,6 @@ type Query {
 }
 
 type Mutation {
-  generateUrl(url: String!): String!
+  generateUrl(url: String!, expiryInMinutes: Int): String!
 }
 `;

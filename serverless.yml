@@ -76,6 +76,9 @@ resources:
           - AttributeName: id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
+        TimeToLiveSpecification:
+          AttributeName: expiryTime
+          Enabled: true
     zipTextUrlsTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -87,3 +90,6 @@ resources:
           - AttributeName: id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
+        TimeToLiveSpecification:
+          AttributeName: expiryTime
+          Enabled: true
