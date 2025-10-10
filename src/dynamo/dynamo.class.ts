@@ -80,7 +80,8 @@ export class DynamoDbOperations {
         return null;
       }
       const now = Math.floor(Date.now() / 1000);
-      const isExpired = record.expiryTime !== undefined && record.expiryTime <= now;
+      const isExpired =
+        record.expiryTime !== undefined && record.expiryTime <= now;
       if (isExpired) {
         console.log(`${mn}: Record found but expired`);
         return null;
@@ -99,7 +100,7 @@ export class DynamoDbOperations {
     try {
       const putItemParams = new PutCommand({
         TableName: this.tableName,
-        Item: { id, text, expiryTime},
+        Item: { id, text, expiryTime },
       });
       console.log(`${mn}:`, putItemParams.input);
       await this.docClient.send(putItemParams);
@@ -128,7 +129,8 @@ export class DynamoDbOperations {
       }
 
       const now = Math.floor(Date.now() / 1000);
-      const isExpired = record.expiryTime !== undefined && record.expiryTime <= now;
+      const isExpired =
+        record.expiryTime !== undefined && record.expiryTime <= now;
 
       if (isExpired) {
         console.log(`${mn}: Record found but expired`);
