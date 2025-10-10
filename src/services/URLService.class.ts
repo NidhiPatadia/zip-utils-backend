@@ -60,10 +60,7 @@ export class URLService {
     const ttl = nowInSeconds + expiryInMinutes * 60;
 
     await new DynamoDbOperations(this.zipTextTableName).putItemInZipTextTable(id, text, ttl);
-
-    const shortUrl = `${process.env.FRONTEND_DOMAIN}/t/${id}`;
-    console.log('Short Text URL:', shortUrl);
-    return shortUrl;
+    return id;
   }
 
   async getZipTextById(id: string): Promise<string> {
