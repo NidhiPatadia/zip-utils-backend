@@ -6,7 +6,8 @@
   "scripts": {
     "start": "sls offline --stage=local",
     "test": "jest --runInBand --coverage",
-    "deploy": "sls deploy --stage=dev"
+    "deploy": "sls deploy --stage=dev",
+    "deploy:prod": "sls deploy --stage=prod"
   },
   "keywords": [],
   "author": "",

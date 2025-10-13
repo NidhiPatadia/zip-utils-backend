@@ -1,19 +1,68 @@
 name: zip-utils-backend ci/cd
-on: workflow_dispatch
-jobs:
-  Test:
-    runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: zip-utils-backend
+on:
+  pull_request:
+    types: [closed]
+    branches: [dev, prod]
+
+  workflow_dispatch:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.check.outputs.should-deploy }}
+      source-branch: ${{ steps.check.outputs.source-branch }}
+    steps:
+      - name: Check deployment conditions
+        id: check
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.merged }}" == "true" && ("${{ github.event.pull_request.base.ref }}" == "dev" || "${{ github.event.pull_request.base.ref }}" == "prod") ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "source-branch=${{ github.event.pull_request.base.ref }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && ("${{ github.ref_name }}" == "dev" || "${{ github.ref_name }}" == "prod") ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "source-branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+            echo "source-branch=" >> $GITHUB_OUTPUT
+          fi
+
+  build_test_deploy:
+    needs: setup
+    runs-on: ubuntu-latest
+    if: ${{ needs.setup.outputs.should-deploy == 'true' }}
+
+    permissions:
+      id-token: write # Required for OIDC authentication
+      contents: read # Required to check out the repository
 
     steps:
-      - name: Check out repository code
+      - name: Checkout source repo
         uses: actions/checkout@v4
-      - name: Setup Node.js latest version
+        with:
+          ref: ${{ needs.setup.outputs.source-branch }}
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - run: npm ci
-      - run: npm test
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Test
+        run: npm test
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::539323004436:role/GitHubActionRole
+          aws-region: ap-south-1
+
+      - name: Deploy Lambda Function
+        run: |
+          npm i -g serverless
+          export SERVERLESS_LICENSE_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+          sls deploy --stage=${{ needs.setup.outputs.source-branch }}
