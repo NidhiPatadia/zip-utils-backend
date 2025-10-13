@@ -4,8 +4,14 @@ import {
   handlers,
 } from '@as-integrations/aws-lambda';
 
-import { resolvers as zipUrlResolvers, typeDefs as zipUrlTypeDefs } from './apps/zip-url/graphql';
-import { resolvers as zipTextResolvers, typeDefs as zipTextTypeDefs } from './apps/zip-text/graphql';
+import {
+  resolvers as zipUrlResolvers,
+  typeDefs as zipUrlTypeDefs,
+} from './apps/zip-url/graphql';
+import {
+  resolvers as zipTextResolvers,
+  typeDefs as zipTextTypeDefs,
+} from './apps/zip-text/graphql';
 
 import { ENVIRONMENTS } from './configs/common.config';
 
