@@ -64,5 +64,5 @@ jobs:
       - name: Deploy Lambda Function
         run: |
           npm i -g serverless
-          SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_LICENSE_KEY }}
+          SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
           sls deploy --stage=${{ needs.setup.outputs.source-branch }}
