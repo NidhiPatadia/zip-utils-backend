@@ -19,6 +19,7 @@ custom:
 
   urlsTableName: ziputils-zipurl-${sls:stage}-urls-table
   zipTextTableName: ziputils-ziptext-${sls:stage}-urls-table
+  secretName: ziputils/encryptionKey
 
 provider:
   name: aws
@@ -37,13 +38,16 @@ provider:
           Action:
             - dynamodb:PutItem
             - dynamodb:GetItem
+            - secretsmanager:GetSecretValue
           Resource:
             - arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.urlsTableName}
             - arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.zipTextTableName}
+            - arn:aws:secretsmanager:${self:provider.region}:*:secret:${self:custom.secretName}-*
   environment:
     NODE_ENV: ${sls:stage}
     IS_PRODUCTION: ${self:custom.config.IS_PRODUCTION}
     FRONTEND_DOMAIN: ${self:custom.config.FRONTEND_DOMAIN}
+    SECRET_NAME: ${self:custom.secretName}
 
 functions:
   graphql:
@@ -79,6 +83,10 @@ resources:
         TimeToLiveSpecification:
           AttributeName: expiryTime
           Enabled: true
+        SSESpecification:
+          SSEEnabled: true
+          SSEType: KMS
+          KMSMasterKeyId: alias/aws/dynamodb
     zipTextUrlsTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -93,3 +101,7 @@ resources:
         TimeToLiveSpecification:
           AttributeName: expiryTime
           Enabled: true
+        SSESpecification:
+          SSEEnabled: true
+          SSEType: KMS
+          KMSMasterKeyId: alias/aws/dynamodb

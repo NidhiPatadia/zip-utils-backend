@@ -5,6 +5,7 @@ import {
   PutCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { config, ENVIRONMENTS } from '../configs/common.config';
+import { EncryptionHelper } from '../services/EncryptionHelper';
 
 export interface IUrlRecord {
   id: string;
@@ -44,9 +45,10 @@ export class DynamoDbOperations {
   async putItemInUrlsTable(id: string, url: string, expiryTime?: number) {
     const mn = this.putItemInUrlsTable.name;
     try {
+      const encryptedUrl = await EncryptionHelper.encrypt(url);
       const item: any = {
         id,
-        url,
+        encryptedUrl,
       };
       if (expiryTime !== undefined) {
         item.expiryTime = expiryTime;
@@ -87,8 +89,11 @@ export class DynamoDbOperations {
         return null;
       }
 
-      console.log(`${mn}:`, record);
-      return record;
+      // ✅ Decrypt before returning
+      const decryptedUrl = await EncryptionHelper.decrypt(record.encryptedUrl);
+      const decryptedRecord = { ...record, url: decryptedUrl };
+      console.log(`${mn}:`, decryptedRecord);
+      return decryptedRecord;
     } catch (e: any) {
       console.error(`ERROR ${mn}`, e);
       throw new Error(e);
@@ -98,9 +103,10 @@ export class DynamoDbOperations {
   async putItemInZipTextTable(id: string, text: string, expiryTime: number) {
     const mn = this.putItemInZipTextTable.name;
     try {
+      const encryptedText = await EncryptionHelper.encrypt(text);
       const putItemParams = new PutCommand({
         TableName: this.tableName,
-        Item: { id, text, expiryTime },
+        Item: { id, encryptedText, expiryTime },
       });
       console.log(`${mn}:`, putItemParams.input);
       await this.docClient.send(putItemParams);
@@ -136,9 +142,13 @@ export class DynamoDbOperations {
         console.log(`${mn}: Record found but expired`);
         return null;
       }
+      console.log('Encrypted Record:', record);
+      // ✅ Decrypt before returning
+      const decryptedText = await EncryptionHelper.decrypt(record.encryptedText);
+      const decryptedRecord = { ...record, text: decryptedText };
 
-      console.log(`${mn}:`, record);
-      return record;
+      console.log(`${mn}:`, decryptedRecord);
+      return decryptedRecord;
     } catch (e: any) {
       console.error(`ERROR ${mn}`, e);
       throw new Error(e);
