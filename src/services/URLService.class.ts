@@ -29,9 +29,7 @@ export class URLService {
     );
 
     // returning the shortned url to the end user
-    const shortUrl = `${process.env.FRONTEND_DOMAIN}/${id}`;
-    console.log('Short URL:', shortUrl);
-    return shortUrl;
+    return id;
   }
 
   async getUrl(shortUrl: string) {
