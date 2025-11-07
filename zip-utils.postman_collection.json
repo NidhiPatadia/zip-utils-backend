@@ -1,0 +1,160 @@
+{
+	"info": {
+		"_postman_id": "bf905b71-9751-4c89-b3ef-cec3bccb7911",
+		"name": "zip-utils",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28527087"
+	},
+	"item": [
+		{
+			"name": "HealthCheck",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "origin",
+						"value": "https://dev.ziputils.com",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query HealthCheck {\r\n  healthCheck\r\n}\r\n",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{ziputils_api_endpoint}}",
+					"host": [
+						"{{ziputils_api_endpoint}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GenerateZipTextUrl",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "origin",
+						"value": "https://dev.ziputils.com",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation GenerateZipTextUrl($text: String!, $expiryInMinutes: Int!) {\r\n  generateZipTextUrl(text: $text, expiryInMinutes: $expiryInMinutes)\r\n}",
+						"variables": "{\r\n    \"text\": \"This is sample text\",\r\n    \"expiryInMinutes\": 10\r\n}"
+					}
+				},
+				"url": {
+					"raw": "{{ziputils_api_endpoint}}",
+					"host": [
+						"{{ziputils_api_endpoint}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetZipText",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "origin",
+						"value": "https://dev.ziputils.com",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query GetZipText($id: String!) {\r\n  getZipText(url: $id)\r\n}",
+						"variables": "{\r\n    \"id\": \"NU3HeUL\"\r\n}"
+					}
+				},
+				"url": {
+					"raw": "{{ziputils_api_endpoint}}",
+					"host": [
+						"{{ziputils_api_endpoint}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GenerateZipShortUrl",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "origin",
+						"value": "https://dev.ziputils.com",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation GenerateZipShortUrl($url: String!) {\r\n  generateUrl(url: $url) \r\n}\r\n",
+						"variables": "{\r\n    \"url\": \"https://google.com\"\r\n}\r\n"
+					}
+				},
+				"url": {
+					"raw": "{{ziputils_api_endpoint}}",
+					"host": [
+						"{{ziputils_api_endpoint}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetZipShortUrl",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "origin",
+						"value": "https://dev.ziputils.com",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query GetZipShortUrl($url: String!) {\r\n  getUrl(url: $url) \r\n}\r\n",
+						"variables": "{\r\n    \"url\": \"http://localhost:4200/tGD01xl\"\r\n}\r\n"
+					}
+				},
+				"url": {
+					"raw": "{{ziputils_api_endpoint}}",
+					"host": [
+						"{{ziputils_api_endpoint}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
