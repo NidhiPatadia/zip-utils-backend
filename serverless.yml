@@ -38,11 +38,16 @@ provider:
           Action:
             - dynamodb:PutItem
             - dynamodb:GetItem
-            - secretsmanager:GetSecretValue
           Resource:
             - arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.urlsTableName}
             - arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.zipTextTableName}
+
+        - Effect: Allow
+          Action:
+            - secretsmanager:GetSecretValue
+          Resource:
             - arn:aws:secretsmanager:${self:provider.region}:*:secret:${self:custom.secretName}-*
+
   environment:
     NODE_ENV: ${sls:stage}
     IS_PRODUCTION: ${self:custom.config.IS_PRODUCTION}
@@ -67,8 +72,11 @@ functions:
       ZIPTEXT_TABLE_NAME: ${self:custom.zipTextTableName}
 
 resources:
+  Conditions:
+    IsProd: !Equals [${sls:stage}, 'prod']
+
   Resources:
-    # ✅ DynamoDB Table
+    # ✅ DynamoDB Table (always created)
     urlsTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -87,6 +95,7 @@ resources:
           SSEEnabled: true
           SSEType: KMS
           KMSMasterKeyId: alias/aws/dynamodb
+
     zipTextUrlsTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -105,3 +114,69 @@ resources:
           SSEEnabled: true
           SSEType: KMS
           KMSMasterKeyId: alias/aws/dynamodb
+
+    # ✅ WAF WebACL (only for prod)
+    ZipUtilsWebACL:
+      Condition: IsProd
+      Type: AWS::WAFv2::WebACL
+      Properties:
+        Name: ziputils-web-acl
+        Scope: REGIONAL
+        DefaultAction:
+          Allow: {}
+        VisibilityConfig:
+          CloudWatchMetricsEnabled: true
+          MetricName: ziputilsWebACL
+          SampledRequestsEnabled: true
+        Rules:
+          - Name: BlockInvalidOrigin
+            Priority: 1
+            Action:
+              Block: {}
+            Statement:
+              NotStatement:
+                Statement:
+                  ByteMatchStatement:
+                    SearchString: ${self:custom.config.FRONTEND_DOMAIN}
+                    FieldToMatch:
+                      SingleHeader:
+                        Name: 'origin'
+                    TextTransformations:
+                      - Priority: 0
+                        Type: 'LOWERCASE'
+                    PositionalConstraint: EXACTLY
+            VisibilityConfig:
+              CloudWatchMetricsEnabled: true
+              MetricName: blockInvalidOrigin
+              SampledRequestsEnabled: true
+
+          - Name: RateLimitZiputils
+            Priority: 2
+            Action:
+              Block: {}
+            Statement:
+              RateBasedStatement:
+                Limit: 100
+                AggregateKeyType: IP
+                ScopeDownStatement:
+                  ByteMatchStatement:
+                    SearchString: ${self:custom.config.FRONTEND_DOMAIN}
+                    FieldToMatch:
+                      SingleHeader:
+                        Name: 'origin'
+                    TextTransformations:
+                      - Priority: 0
+                        Type: 'LOWERCASE'
+                    PositionalConstraint: EXACTLY
+            VisibilityConfig:
+              CloudWatchMetricsEnabled: true
+              MetricName: rateLimitZiputils
+              SampledRequestsEnabled: true
+
+    # ✅ WAF Association (only for prod)
+    WAFWebACLAssociation:
+      Condition: IsProd
+      Type: AWS::WAFv2::WebACLAssociation
+      Properties:
+        ResourceArn: !Sub arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
+        WebACLArn: !GetAtt ZipUtilsWebACL.Arn
