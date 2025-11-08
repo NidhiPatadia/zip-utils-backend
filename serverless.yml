@@ -73,7 +73,10 @@ functions:
 
 resources:
   Conditions:
-    IsProd: !Equals [${sls:stage}, 'prod']
+    IsProd:
+      Fn::Equals:
+        - ${sls:stage}
+        - prod
 
   Resources:
     # ✅ DynamoDB Table (always created)
