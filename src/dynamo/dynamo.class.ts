@@ -100,14 +100,24 @@ export class DynamoDbOperations {
     }
   }
 
-  async putItemInZipTextTable(id: string, text: string, expiryTime: number) {
+  async putItemInZipTextTable(id: string, text: string, expiryTime?: number) {
     const mn = this.putItemInZipTextTable.name;
     try {
       const encryptedText = await EncryptionHelper.encrypt(text);
+      const item: Record<string, any> = {
+        id,
+        encryptedText,
+      };
+
+      if (expiryTime !== undefined && expiryTime !== null) {
+        item.expiryTime = expiryTime;
+      }
+
       const putItemParams = new PutCommand({
         TableName: this.tableName,
-        Item: { id, encryptedText, expiryTime },
+        Item: item,
       });
+
       console.log(`${mn}:`, putItemParams.input);
       await this.docClient.send(putItemParams);
     } catch (e: any) {
