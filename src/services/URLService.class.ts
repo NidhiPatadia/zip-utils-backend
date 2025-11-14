@@ -55,16 +55,21 @@ export class URLService {
   // 📝 For storing long custom text
   async generateZipTextUrl(
     text: string,
-    expiryInMinutes = 1440,
+    expiryInMinutes?: number | null,
   ): Promise<string> {
     console.log('Requested Text:', text);
 
     const uuid = new ShortUniqueId();
     const id = uuid.randomUUID(config.minUrlLength);
+    let ttl: number | undefined;
 
-    // Calculate TTL timestamp
-    const nowInSeconds = Math.floor(Date.now() / 1000);
-    const ttl = nowInSeconds + expiryInMinutes * 60;
+    // 🕒 Only set TTL if expiry is defined and > 0
+    if (expiryInMinutes && expiryInMinutes > 0) {
+      const nowInSeconds = Math.floor(Date.now() / 1000);
+      ttl = nowInSeconds + expiryInMinutes * 60;
+    } else {
+      ttl = undefined;
+    }
 
     await new DynamoDbOperations(this.zipTextTableName).putItemInZipTextTable(
       id,
