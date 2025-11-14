@@ -78,6 +78,10 @@ resources:
         - ${sls:stage}
         - prod
 
+    IsNotProd:
+      Fn::Not:
+        - Condition: IsProd
+
   Resources:
     # ✅ DynamoDB Table (always created)
     urlsTable:
@@ -183,3 +187,41 @@ resources:
       Properties:
         ResourceArn: !Sub arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
         WebACLArn: !GetAtt ZipUtilsWebACL.Arn
+
+    ApiGatewayCustomDomainProd:
+      Condition: IsProd
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        DomainName: api.ziputils.com
+        RegionalCertificateArn: arn:aws:acm:ap-south-1:539323004436:certificate/87908d33-4f44-4654-9ce1-c4f3d2ea9847
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+
+    ApiGatewayCustomDomainDev:
+      Condition: IsNotProd
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        DomainName: dev-api.ziputils.com
+        RegionalCertificateArn: arn:aws:acm:ap-south-1:539323004436:certificate/87908d33-4f44-4654-9ce1-c4f3d2ea9847
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+
+    ApiGatewayBasePathMappingProd:
+      Condition: IsProd
+      Type: AWS::ApiGateway::BasePathMapping
+      DependsOn: ApiGatewayCustomDomainProd
+      Properties:
+        DomainName: api.ziputils.com
+        RestApiId: !Ref ApiGatewayRestApi
+        Stage: ${self:provider.stage}
+
+    ApiGatewayBasePathMappingDev:
+      Condition: IsNotProd
+      Type: AWS::ApiGateway::BasePathMapping
+      DependsOn: ApiGatewayCustomDomainDev
+      Properties:
+        DomainName: dev-api.ziputils.com
+        RestApiId: !Ref ApiGatewayRestApi
+        Stage: ${self:provider.stage}
