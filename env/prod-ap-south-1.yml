@@ -1,2 +1,7 @@
 IS_PRODUCTION: true
 FRONTEND_DOMAIN: https://ziputils.com
+BACKEND_ACM_ARN: arn:aws:acm:ap-south-1:539323004436:certificate/87908d33-4f44-4654-9ce1-c4f3d2ea9847
+REDIRECT_ACM_ARN: arn:aws:acm:ap-south-1:539323004436:certificate/97626f2c-b45e-4191-a423-9749051d2c34
+BACKEND_CUSTOM_DOMAIN: api.ziputils.com
+TEXT_REDIRECT_CUSTOM_DOMAIN: t.ziputils.com
+URL_REDIRECT_CUSTOM_DOMAIN: u.ziputils.com

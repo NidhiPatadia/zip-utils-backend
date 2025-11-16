@@ -154,7 +154,9 @@ export class DynamoDbOperations {
       }
       console.log('Encrypted Record:', record);
       // ✅ Decrypt before returning
-      const decryptedText = await EncryptionHelper.decrypt(record.encryptedText);
+      const decryptedText = await EncryptionHelper.decrypt(
+        record.encryptedText,
+      );
       const decryptedRecord = { ...record, text: decryptedText };
 
       console.log(`${mn}:`, decryptedRecord);
