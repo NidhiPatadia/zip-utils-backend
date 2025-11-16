@@ -71,6 +71,14 @@ functions:
       URLS_TABLE_NAME: ${self:custom.urlsTableName}
       ZIPTEXT_TABLE_NAME: ${self:custom.zipTextTableName}
 
+  redirect:
+    handler: src/handlers/redirect.redirectHandler
+    events:
+      - http:
+          path: '{type}/{id}'
+          method: get
+          cors: false
+
 resources:
   Conditions:
     IsProd:
@@ -188,12 +196,13 @@ resources:
         ResourceArn: !Sub arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
         WebACLArn: !GetAtt ZipUtilsWebACL.Arn
 
+    # ---------- CUSTOM DOMAINS FOR BACKEND URL ----------
     ApiGatewayCustomDomainProd:
       Condition: IsProd
       Type: AWS::ApiGateway::DomainName
       Properties:
-        DomainName: api.ziputils.com
-        RegionalCertificateArn: arn:aws:acm:ap-south-1:539323004436:certificate/87908d33-4f44-4654-9ce1-c4f3d2ea9847
+        DomainName: ${self:custom.config.BACKEND_CUSTOM_DOMAIN}
+        RegionalCertificateArn: ${self:custom.config.BACKEND_ACM_ARN}
         EndpointConfiguration:
           Types:
             - REGIONAL
@@ -202,18 +211,19 @@ resources:
       Condition: IsNotProd
       Type: AWS::ApiGateway::DomainName
       Properties:
-        DomainName: dev-api.ziputils.com
-        RegionalCertificateArn: arn:aws:acm:ap-south-1:539323004436:certificate/87908d33-4f44-4654-9ce1-c4f3d2ea9847
+        DomainName: ${self:custom.config.BACKEND_CUSTOM_DOMAIN}
+        RegionalCertificateArn: ${self:custom.config.BACKEND_ACM_ARN}
         EndpointConfiguration:
           Types:
             - REGIONAL
 
+    # ---------- MAPPING OF CUSTOM DOMAINS FOR BACKEND URL ----------
     ApiGatewayBasePathMappingProd:
       Condition: IsProd
       Type: AWS::ApiGateway::BasePathMapping
       DependsOn: ApiGatewayCustomDomainProd
       Properties:
-        DomainName: api.ziputils.com
+        DomainName: ${self:custom.config.BACKEND_CUSTOM_DOMAIN}
         RestApiId: !Ref ApiGatewayRestApi
         Stage: ${self:provider.stage}
 
@@ -222,6 +232,84 @@ resources:
       Type: AWS::ApiGateway::BasePathMapping
       DependsOn: ApiGatewayCustomDomainDev
       Properties:
-        DomainName: dev-api.ziputils.com
+        DomainName: ${self:custom.config.BACKEND_CUSTOM_DOMAIN}
+        RestApiId: !Ref ApiGatewayRestApi
+        Stage: ${self:provider.stage}
+
+    # ---------- CUSTOM DOMAINS FOR REDIRECT HANDLER ----------
+    RedirectDomainTextProd:
+      Condition: IsProd
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        DomainName: ${self:custom.config.TEXT_REDIRECT_CUSTOM_DOMAIN}
+        RegionalCertificateArn: ${self:custom.config.REDIRECT_ACM_ARN}
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+
+    RedirectDomainUrlProd:
+      Condition: IsProd
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        DomainName: ${self:custom.config.URL_REDIRECT_CUSTOM_DOMAIN}
+        RegionalCertificateArn: ${self:custom.config.REDIRECT_ACM_ARN}
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+
+    RedirectDomainTextDev:
+      Condition: IsNotProd
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        DomainName: ${self:custom.config.TEXT_REDIRECT_CUSTOM_DOMAIN}
+        RegionalCertificateArn: ${self:custom.config.REDIRECT_ACM_ARN}
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+
+    RedirectDomainUrlDev:
+      Condition: IsNotProd
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        DomainName: ${self:custom.config.URL_REDIRECT_CUSTOM_DOMAIN}
+        RegionalCertificateArn: ${self:custom.config.REDIRECT_ACM_ARN}
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+
+    # ---------- MAPPINGS OF CUSTOM DOMAINS FOR REDIRECT HANDLER ----------
+    RedirectBasePathTextProd:
+      Condition: IsProd
+      Type: AWS::ApiGateway::BasePathMapping
+      DependsOn: RedirectDomainTextProd
+      Properties:
+        DomainName: ${self:custom.config.TEXT_REDIRECT_CUSTOM_DOMAIN}
+        RestApiId: !Ref ApiGatewayRestApi
+        Stage: ${self:provider.stage}
+
+    RedirectBasePathUrlProd:
+      Condition: IsProd
+      Type: AWS::ApiGateway::BasePathMapping
+      DependsOn: RedirectDomainUrlProd
+      Properties:
+        DomainName: ${self:custom.config.URL_REDIRECT_CUSTOM_DOMAIN}
+        RestApiId: !Ref ApiGatewayRestApi
+        Stage: ${self:provider.stage}
+
+    RedirectBasePathTextDev:
+      Condition: IsNotProd
+      Type: AWS::ApiGateway::BasePathMapping
+      DependsOn: RedirectDomainTextDev
+      Properties:
+        DomainName: ${self:custom.config.TEXT_REDIRECT_CUSTOM_DOMAIN}
+        RestApiId: !Ref ApiGatewayRestApi
+        Stage: ${self:provider.stage}
+
+    RedirectBasePathUrlDev:
+      Condition: IsNotProd
+      Type: AWS::ApiGateway::BasePathMapping
+      DependsOn: RedirectDomainUrlDev
+      Properties:
+        DomainName: ${self:custom.config.URL_REDIRECT_CUSTOM_DOMAIN}
         RestApiId: !Ref ApiGatewayRestApi
         Stage: ${self:provider.stage}
