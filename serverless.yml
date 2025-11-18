@@ -76,9 +76,13 @@ functions:
     handler: src/handlers/redirect.redirectHandler
     events:
       - http:
-          path: '{id}'
+          path: '/{id}'
           method: get
           cors: false
+          response:
+            statusCodes:
+              302:
+                pattern: ''
 
 resources:
   Conditions:

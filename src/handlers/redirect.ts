@@ -6,18 +6,19 @@ enum RedirectionType {
 }
 
 const redirectToUrl = (url: string) => {
-  return {
+  const redirection = {
     statusCode: 302,
-    headers: { Location: url },
+    headers: { Location: url, 'Content-Type': 'text/html' },
     body: '',
   };
+  console.log(redirectToUrl.name, redirection);
+  return redirection;
 };
 
 export const redirectHandler = async (event: any) => {
   console.log('APIGateway event:', event);
   const host = event?.headers?.Host;
-  const urlParts = event?.headers?.referer?.split('/') ?? [];
-  const id = urlParts[urlParts.length - 1];
+  const id = event?.path?.split('/')[1];
   if (!id) {
     return { statusCode: 400, body: 'Invalid request' };
   }
