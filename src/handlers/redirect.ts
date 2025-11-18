@@ -14,16 +14,18 @@ const redirectToUrl = (url: string) => {
 };
 
 export const redirectHandler = async (event: any) => {
-  const host = event?.headers['host'];
-  const id = event?.pathParameters?.id;
-  const type = host.startsWith(RedirectionType.TEXT)
-    ? RedirectionType.TEXT
-    : RedirectionType.URL;
-
+  console.log('APIGateway event:', event);
+  const host = event?.headers?.Host;
+  const urlParts = event?.headers?.referer?.split('/') ?? [];
+  const id = urlParts[urlParts.length - 1];
   if (!id) {
     return { statusCode: 400, body: 'Invalid request' };
   }
 
+  const type =
+    host === process.env.TEXT_REDIRECT_CUSTOM_DOMAIN
+      ? RedirectionType.TEXT
+      : RedirectionType.URL;
   if (type === RedirectionType.TEXT) {
     const data = await new URLService().getZipTextById(id);
     if (!data) {

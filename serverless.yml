@@ -53,6 +53,10 @@ provider:
     IS_PRODUCTION: ${self:custom.config.IS_PRODUCTION}
     FRONTEND_DOMAIN: ${self:custom.config.FRONTEND_DOMAIN}
     SECRET_NAME: ${self:custom.secretName}
+    URLS_TABLE_NAME: ${self:custom.urlsTableName}
+    ZIPTEXT_TABLE_NAME: ${self:custom.zipTextTableName}
+    TEXT_REDIRECT_CUSTOM_DOMAIN: ${self:custom.TEXT_REDIRECT_CUSTOM_DOMAIN}
+    URL_REDIRECT_CUSTOM_DOMAIN: ${self:custom.URL_REDIRECT_CUSTOM_DOMAIN}
 
 functions:
   graphql:
@@ -67,15 +71,12 @@ functions:
               - Content-Type
               - Authorization
             allowCredentials: false
-    environment:
-      URLS_TABLE_NAME: ${self:custom.urlsTableName}
-      ZIPTEXT_TABLE_NAME: ${self:custom.zipTextTableName}
 
   redirect:
     handler: src/handlers/redirect.redirectHandler
     events:
       - http:
-          path: '{type}/{id}'
+          path: '{id}'
           method: get
           cors: false
 
