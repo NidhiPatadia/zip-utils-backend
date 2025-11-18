@@ -55,8 +55,8 @@ provider:
     SECRET_NAME: ${self:custom.secretName}
     URLS_TABLE_NAME: ${self:custom.urlsTableName}
     ZIPTEXT_TABLE_NAME: ${self:custom.zipTextTableName}
-    TEXT_REDIRECT_CUSTOM_DOMAIN: ${self:custom.TEXT_REDIRECT_CUSTOM_DOMAIN}
-    URL_REDIRECT_CUSTOM_DOMAIN: ${self:custom.URL_REDIRECT_CUSTOM_DOMAIN}
+    TEXT_REDIRECT_CUSTOM_DOMAIN: ${self:custom.config.TEXT_REDIRECT_CUSTOM_DOMAIN}
+    URL_REDIRECT_CUSTOM_DOMAIN: ${self:custom.config.URL_REDIRECT_CUSTOM_DOMAIN}
 
 functions:
   graphql:
