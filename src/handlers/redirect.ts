@@ -27,6 +27,8 @@ export const redirectHandler = async (event: any) => {
     host === process.env.TEXT_REDIRECT_CUSTOM_DOMAIN
       ? RedirectionType.TEXT
       : RedirectionType.URL;
+
+  // handle text redirection
   if (type === RedirectionType.TEXT) {
     const data = await new URLService().getZipTextById(id);
     if (!data) {
@@ -37,10 +39,15 @@ export const redirectHandler = async (event: any) => {
     return redirectToUrl(url);
   }
 
-  const shortUrl = await new URLService().getUrl(id);
+  // handle url redirection
+  let shortUrl = await new URLService().getUrl(id);
   if (!shortUrl) {
     return redirectToUrl(`${process.env.FRONTEND_DOMAIN}/404`);
   }
 
+  // If user forgot protocol, assume https://
+  if (!/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(shortUrl)) {
+    shortUrl = 'https://' + shortUrl;
+  }
   return redirectToUrl(shortUrl);
 };
